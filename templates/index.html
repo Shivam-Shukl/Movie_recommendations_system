@@ -146,43 +146,6 @@
             color: #ff6b6b;
         }
 
-        /* Filters */
-        .filters {
-            padding: 2rem;
-            background: rgba(255,255,255,0.05);
-            margin: 2rem 0;
-            border-radius: 15px;
-            backdrop-filter: blur(10px);
-        }
-
-        .filters-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .filter-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .filter-group label {
-            font-weight: bold;
-            color: #ff6b6b;
-        }
-
-        .filter-group select, .filter-group input {
-            padding: 0.5rem;
-            border: none;
-            border-radius: 8px;
-            background: rgba(255,255,255,0.1);
-            color: white;
-            outline: none;
-        }
-
         /* Movie Sections */
         .section {
             padding: 3rem 2rem;
@@ -437,10 +400,6 @@
                 grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
                 gap: 1rem;
             }
-            
-            .filters-grid {
-                grid-template-columns: 1fr;
-            }
 
             .recommendation-search {
                 flex-direction: column;
@@ -456,7 +415,6 @@
             <div class="nav-links">
                 <a onclick="scrollToSection('trending')">Trending</a>
                 <a onclick="scrollToSection('popular')">Popular</a>
-                <a onclick="scrollToSection('genres')">Genres</a>
                 <a onclick="scrollToSection('recommendations')">Recommendations</a>
             </div>
         </div>
@@ -470,38 +428,6 @@
             <p>Explore trending movies, get personalized recommendations, and dive deep into the world of cinema</p>
             <div class="search-container">
                 <input type="text" class="search-box" id="movieSearch" placeholder="Search for movies..." onkeyup="searchMovies()">
-            </div>
-        </div>
-    </section>
-
-    <!-- Filters -->
-    <section class="filters">
-        <div class="filters-grid">
-            <div class="filter-group">
-                <label>Genre</label>
-                <select id="genreFilter" onchange="applyFilters()">
-                    <option value="">All Genres</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label>Year</label>
-                <select id="yearFilter" onchange="applyFilters()">
-                    <option value="">All Years</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label>Sort By</label>
-                <select id="sortFilter" onchange="applyFilters()">
-                    <option value="popularity.desc">Popularity</option>
-                    <option value="vote_average.desc">Rating</option>
-                    <option value="release_date.desc">Release Date</option>
-                    <option value="revenue.desc">Box Office</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label>Minimum Rating</label>
-                <input type="range" id="ratingFilter" min="0" max="10" step="0.1" value="0" onchange="applyFilters()">
-                <span id="ratingValue">0</span>
             </div>
         </div>
     </section>
@@ -540,12 +466,6 @@
             </div>
             <div id="recommendationResults"></div>
         </div>
-    </section>
-
-    <!-- Genre-based Movies -->
-    <section class="section" id="genres">
-        <h2>🎭 Popular by Genre</h2>
-        <div id="genreMovies"></div>
     </section>
 
     <!-- Movie Details Modal -->
@@ -589,7 +509,6 @@
             loadPopularMovies();
             setupHeroCarousel();
             setupNavigation();
-            setupFilters();
         });
 
         // API Functions
@@ -611,7 +530,6 @@
             const data = await fetchFromAPI('/genres');
             if (data && data.genres) {
                 genres = data.genres;
-                populateGenreFilter();
             }
         }
 
@@ -762,56 +680,6 @@
         function closeModal() {
             document.getElementById('movieModal').style.display = 'none';
             document.body.style.overflow = 'auto';
-        }
-
-        // Filter Functions
-        function populateGenreFilter() {
-            const select = document.getElementById('genreFilter');
-            genres.forEach(genre => {
-                const option = document.createElement('option');
-                option.value = genre.id;
-                option.textContent = genre.name;
-                select.appendChild(option);
-            });
-        }
-
-        function setupFilters() {
-            // Populate year filter
-            const yearSelect = document.getElementById('yearFilter');
-            const currentYear = new Date().getFullYear();
-            for (let year = currentYear; year >= 1900; year--) {
-                const option = document.createElement('option');
-                option.value = year;
-                option.textContent = year;
-                yearSelect.appendChild(option);
-            }
-
-            // Rating slider
-            const ratingSlider = document.getElementById('ratingFilter');
-            const ratingValue = document.getElementById('ratingValue');
-            ratingSlider.addEventListener('input', function() {
-                ratingValue.textContent = this.value;
-            });
-        }
-
-        async function applyFilters() {
-            const genre = document.getElementById('genreFilter').value;
-            const year = document.getElementById('yearFilter').value;
-            const sort = document.getElementById('sortFilter').value;
-            const minRating = document.getElementById('ratingFilter').value;
-
-            let endpoint = '/discover?';
-            const params = new URLSearchParams();
-            
-            if (genre) params.append('with_genres', genre);
-            if (year) params.append('year', year);
-            if (minRating > 0) params.append('vote_average.gte', minRating);
-            params.append('sort_by', sort);
-
-            const data = await fetchFromAPI(`/discover?${params.toString()}`);
-            if (data && data.results) {
-                displayMovies(data.results, 'popularMovies');
-            }
         }
 
         // Navigation and UI
